@@ -8,14 +8,21 @@ import shutil
 from tkinter.filedialog import askdirectory
 from tkinter import messagebox
 
-# Ctk settings
+# Ctk
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
 app = ctk.CTk()
-app.geometry("750x650")
-app.title("Mpvpaper-client")
+app.geometry("900x750")
+app.title("Mpvpaper Client")
+app.resizable(False, False)
 
-# ----------------------------------------
+# Color
+PRIMARY_COLOR = ["#1e5631", "#2d7a2d"]
+PRIMARY_HOVER = ["#2d7a2d", "#4caf50"]
+ACCENT_COLOR = ["#0d7377", "#14a085"]
+ACCENT_HOVER = ["#14a085", "#17c3b2"]
+DANGER_COLOR = ["#a83232", "#e74c3c"]
+NAVBAR_COLOR = ["#1a1a1a", "#0d1117"]
 
 # Allerts
 print("\nTo use the app you need to have mpvpaper installed (https://github.com/GhostNaN/mpvpaper).")
@@ -27,6 +34,7 @@ mp4_files = []
 config_file = "mpvpaper_config.json"
 current_directory = None
 checkbox_vars = {}
+main_content_frame = None
 
 # Load and save JSON
 def load_config():
@@ -108,7 +116,8 @@ def set_directory():
         save_config()
 
         directory_name = os.path.basename(path) if path else "Not selected"
-        set_directory_button.configure(text=f"🗂️ {directory_name}")
+        set_directory_button.configure(text=f"📁 {directory_name}")
+        status_label.configure(text=f"Current Directory: {directory_name}")
         print(f"Directory set: {path}")
 
 # Fetch wallpapers
@@ -129,8 +138,8 @@ def fetch_wallpaper():
         print(f"Found {len(mp4_files)} MP4 files in {current_directory}")
 
         checkbox_vars.clear()
-
         frame_wallpaper()
+        file_count_label.configure(text=f"Files Found: {len(mp4_files)} MP4s")
     except Exception as e:
         messagebox.showerror("Error", f"Error reading directory: {e}")
 
@@ -139,12 +148,13 @@ def frame_wallpaper():
 
     if wallpaper_frame is None:
         wallpaper_frame = ctk.CTkScrollableFrame(
-            master=app,
-            width=550,
-            height=250,
-            corner_radius=15
+            master=main_content_frame,
+            width=580,
+            height=350,
+            corner_radius=15,
+            fg_color=["#f0f0f0", "#1e1e1e"]
         )
-        wallpaper_frame.pack(pady=(20, 20), padx=30, fill="both", expand=True)
+        wallpaper_frame.pack(pady=(20, 20), padx=20, fill="both", expand=True)
 
     for widget in wallpaper_frame.winfo_children():
         widget.destroy()
@@ -153,42 +163,60 @@ def frame_wallpaper():
         no_files_label = ctk.CTkLabel(
             master=wallpaper_frame,
             text="No MP4 files found in the selected directory",
-            font=ctk.CTkFont(size=14)
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color=["#666666", "#888888"]
         )
-        no_files_label.pack(pady=20)
+        no_files_label.pack(pady=50)
         return
 
-    for filename in mp4_files:
+    for i, filename in enumerate(mp4_files):
         file_frame = ctk.CTkFrame(
             master=wallpaper_frame,
-            width=500,
-            height=50,
-            corner_radius=12
+            width=550,
+            height=60,
+            corner_radius=12,
+            fg_color=["#ffffff", "#2a2a2a"],
+            border_width=1,
+            border_color=["#e0e0e0", "#3a3a3a"]
         )
         file_frame.pack(pady=8, padx=15, fill="x")
         file_frame.pack_propagate(False)
 
-
         checkbox_vars[filename] = ctk.BooleanVar()
-
 
         checkbox = ctk.CTkCheckBox(
             master=file_frame,
             text="",
             variable=checkbox_vars[filename],
-            width=20,
-            command=apply_wallpapers
+            width=24,
+            height=24,
+            command=apply_wallpapers,
+            fg_color=PRIMARY_COLOR,
+            hover_color=PRIMARY_HOVER
         )
-        checkbox.pack(side="left", padx=(15, 10), pady=10)
+        checkbox.pack(side="left", padx=(20, 15), pady=18)
 
+        # File info
+        file_info_frame = ctk.CTkFrame(master=file_frame, fg_color="transparent")
+        file_info_frame.pack(side="left", fill="x", expand=True, pady=10)
 
         file_label = ctk.CTkLabel(
-            master=file_frame,
+            master=file_info_frame,
             text=f"🎬 {filename}",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w"
         )
-        file_label.pack(side="left", padx=(0, 15), pady=10, fill="x", expand=True)
+        file_label.pack(anchor="w", padx=(0, 15))
+
+        # File number
+        number_label = ctk.CTkLabel(
+            master=file_frame,
+            text=f"#{i+1}",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=["#666666", "#888888"],
+            width=40
+        )
+        number_label.pack(side="right", padx=(0, 20), pady=18)
 
 # Apply wallpapers
 def apply_wallpapers():
@@ -215,7 +243,6 @@ def apply_wallpapers():
                 except Exception as e:
                     messagebox.showerror("Error", f"Could not move {filename}: {e}")
 
-
     fetch_wallpaper()
 
 # Remove wallpapers
@@ -236,115 +263,187 @@ def remove_from_apply():
             try:
                 shutil.move(src, dst)
             except Exception as e:
-                messagebox.showerror("Errore", f"{filename}: {e}")
+                messagebox.showerror("Error", f"{filename}: {e}")
 
     fetch_wallpaper()
-
 
 # UI
 load_config()
 
-# Skibidi Text
-title_label_1 = ctk.CTkLabel(
+# Navbar Frame
+navbar_frame = ctk.CTkFrame(
     master=app,
-    text="Mpvpaper-client",
-    font=ctk.CTkFont(size=30, weight="bold")
+    height=80,
+    corner_radius=0,
+    fg_color=NAVBAR_COLOR
 )
-title_label_1.pack(pady=(30, 5))
+navbar_frame.pack(fill="x", side="top")
+navbar_frame.pack_propagate(False)
 
-# Description
-subtitle_label_1 = ctk.CTkLabel(
-    master=app,
-    text="By Helixo22",
-    font=ctk.CTkFont(size=15)
+# Navbar Left
+navbar_left = ctk.CTkFrame(master=navbar_frame, fg_color="transparent")
+navbar_left.pack(side="left", fill="y", padx=30, pady=15)
+
+title_label = ctk.CTkLabel(
+    master=navbar_left,
+    text="🎬 Mpvpaper Client",
+    font=ctk.CTkFont(size=28, weight="bold"),
+    text_color=["#ffffff", "#ffffff"]
 )
-subtitle_label_1.pack(pady=(0, 25))
+title_label.pack(side="left")
 
-# Switch
+subtitle_label = ctk.CTkLabel(
+    master=navbar_left,
+    text="v2.0 • By Helixo22",
+    font=ctk.CTkFont(size=12),
+    text_color=["#cccccc", "#888888"]
+)
+subtitle_label.pack(side="left", padx=(15, 0), pady=(5, 0))
+
+# Navbar Right
+navbar_right = ctk.CTkFrame(master=navbar_frame, fg_color="transparent")
+navbar_right.pack(side="right", fill="y", padx=20, pady=15)
+
+
 switch_1 = ctk.CTkSwitch(
-    master=app,
-    text="🌿 On/Off Wallpaper",
+    master=navbar_right,
+    text="Wallpaper Active",
     command=on_off,
     variable=switch_var,
     onvalue="on",
-    offvalue="off"
+    offvalue="off",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    text_color=["#ffffff", "#ffffff"],
+    fg_color=PRIMARY_COLOR,
+    progress_color=PRIMARY_HOVER
 )
-switch_1.pack(pady=(0, 15))
+switch_1.pack(side="right", padx=(20, 0))
 
-# Directory button
-directory_text = "🗂️Set Directory"
-if current_directory:
-    directory_name = os.path.basename(current_directory)
-    directory_text = f"🗂️ {directory_name}"
+# Window controls
+controls_frame = ctk.CTkFrame(master=navbar_right, fg_color="transparent")
+controls_frame.pack(side="right")
 
-set_directory_button = ctk.CTkButton(
-    master=app,
-    text=directory_text,
-    command=set_directory,
-    width=220,
-    height=45,
-    corner_radius=15,
-    font=ctk.CTkFont(size=16, weight="bold"),
-    fg_color=["#2d7a2d", "#4caf50"],
-    hover_color=["#4caf50", "#66bb6a"]
-)
-set_directory_button.pack(pady=(0, 15))
-
-# Fetch wallpapers
-fetch_wallpaper_button = ctk.CTkButton(
-    master=app,
-    text="📂Fetch Wallpapers",
-    command=fetch_wallpaper,
-    width=220,
-    height=45,
-    corner_radius=15,
-    font=ctk.CTkFont(size=16, weight="bold"),
-    fg_color=["#2d7a2d", "#4caf50"],
-    hover_color=["#4caf50", "#66bb6a"]
-)
-fetch_wallpaper_button.pack(pady=(15, 10))
-
-# Remove Wallpapers
-remove_wallpapers_button = ctk.CTkButton(
-    master=app,
-    text="⬅️ Rimuovi da Apply",
-    command=remove_from_apply,
-    width=220,
-    height=45,
-    corner_radius=15,
-    font=ctk.CTkFont(size=16, weight="bold"),
-    fg_color=["#2d7a2d", "#4caf50"],
-    hover_color=["#4caf50", "#66bb6a"]
-)
-remove_wallpapers_button.pack(pady=(0, 10))
-
-# Hide button
 hide_button = ctk.CTkButton(
-    master=app,
-    text="🫣",
+    master=controls_frame,
+    text="−",
     width=35,
     height=35,
-    fg_color="#2d7a2d",
-    hover_color="#4caf50",
+    fg_color=ACCENT_COLOR,
+    hover_color=ACCENT_HOVER,
     command=hide_window,
-    corner_radius=15,
-    font=ctk.CTkFont(size=20)
-)
-
-# Close button
-close_button = ctk.CTkButton(
-    master=app,
-    text="❌",
-    width=35,
-    height=35,
-    fg_color="#a83232",
-    hover_color="#e74c3c",
-    command=close_app,
-    corner_radius=15,
+    corner_radius=8,
     font=ctk.CTkFont(size=20, weight="bold")
 )
+hide_button.pack(side="right", padx=(0, 8))
 
-close_button.place(relx=1.0, y=10, anchor="ne")
-hide_button.place(relx=0.95, y=10, anchor="ne")
+close_button = ctk.CTkButton(
+    master=controls_frame,
+    text="×",
+    width=35,
+    height=35,
+    fg_color=DANGER_COLOR,
+    hover_color=["#c44752", "#ff5757"],
+    command=close_app,
+    corner_radius=8,
+    font=ctk.CTkFont(size=20, weight="bold")
+)
+close_button.pack(side="right")
+
+# Main
+main_content_frame = ctk.CTkFrame(
+    master=app,
+    corner_radius=0,
+    fg_color=["#f8f9fa", "#0d1117"]
+)
+main_content_frame.pack(fill="both", expand=True)
+
+# Control Panel
+control_panel = ctk.CTkFrame(
+    master=main_content_frame,
+    height=140,
+    corner_radius=15,
+    fg_color=["#ffffff", "#1a1a1a"],
+    border_width=1,
+    border_color=["#e0e0e0", "#3a3a3a"]
+)
+control_panel.pack(fill="x", padx=20, pady=(20, 10))
+control_panel.pack_propagate(False)
+
+# Status Section
+status_frame = ctk.CTkFrame(master=control_panel, fg_color="transparent")
+status_frame.pack(fill="x", padx=20, pady=(15, 10))
+
+status_label = ctk.CTkLabel(
+    master=status_frame,
+    text="Current Directory: Not selected",
+    font=ctk.CTkFont(size=14, weight="bold"),
+    anchor="w"
+)
+status_label.pack(side="left")
+
+file_count_label = ctk.CTkLabel(
+    master=status_frame,
+    text="Files Found: 0 MP4s",
+    font=ctk.CTkFont(size=12),
+    text_color=["#666666", "#888888"],
+    anchor="e"
+)
+file_count_label.pack(side="right")
+
+# Button
+button_panel = ctk.CTkFrame(master=control_panel, fg_color="transparent")
+button_panel.pack(fill="x", padx=20, pady=(0, 15))
+
+
+directory_text = "📁 Set Directory"
+if current_directory:
+    directory_name = os.path.basename(current_directory)
+    directory_text = f"📁 {directory_name}"
+
+set_directory_button = ctk.CTkButton(
+    master=button_panel,
+    text=directory_text,
+    command=set_directory,
+    width=180,
+    height=45,
+    corner_radius=12,
+    font=ctk.CTkFont(size=14, weight="bold"),
+    fg_color=PRIMARY_COLOR,
+    hover_color=PRIMARY_HOVER
+)
+set_directory_button.pack(side="left", padx=(0, 10))
+
+
+fetch_wallpaper_button = ctk.CTkButton(
+    master=button_panel,
+    text="🔄 Fetch Wallpapers",
+    command=fetch_wallpaper,
+    width=160,
+    height=45,
+    corner_radius=12,
+    font=ctk.CTkFont(size=14, weight="bold"),
+    fg_color=ACCENT_COLOR,
+    hover_color=ACCENT_HOVER
+)
+fetch_wallpaper_button.pack(side="left", padx=(0, 10))
+
+
+remove_wallpapers_button = ctk.CTkButton(
+    master=button_panel,
+    text="↩️ Remove from Apply",
+    command=remove_from_apply,
+    width=160,
+    height=45,
+    corner_radius=12,
+    font=ctk.CTkFont(size=14, weight="bold"),
+    fg_color=["#6c757d", "#495057"],
+    hover_color=["#5a6268", "#6c757d"]
+)
+remove_wallpapers_button.pack(side="left")
+
+# Load directory
+if current_directory:
+    directory_name = os.path.basename(current_directory)
+    status_label.configure(text=f"Current Directory: {directory_name}")
 
 app.mainloop()
