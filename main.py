@@ -190,6 +190,7 @@ def frame_wallpaper():
         )
         file_label.pack(side="left", padx=(0, 15), pady=10, fill="x", expand=True)
 
+# Apply wallpapers
 def apply_wallpapers():
 
     # Create Apply
@@ -214,6 +215,28 @@ def apply_wallpapers():
                 except Exception as e:
                     messagebox.showerror("Error", f"Could not move {filename}: {e}")
 
+
+    fetch_wallpaper()
+
+# Remove wallpapers
+def remove_from_apply():
+    if not current_directory:
+        messagebox.showwarning("Warning", "Select a directory first!")
+        return
+
+    apply_folder = os.path.join(current_directory, "Apply")
+    if not os.path.exists(apply_folder):
+        messagebox.showinfo("Info", "No wallpapers to remove.")
+        return
+
+    for filename in os.listdir(apply_folder):
+        src = os.path.join(apply_folder, filename)
+        dst = os.path.join(current_directory, filename)
+        if os.path.exists(src) and not os.path.exists(dst):
+            try:
+                shutil.move(src, dst)
+            except Exception as e:
+                messagebox.showerror("Errore", f"{filename}: {e}")
 
     fetch_wallpaper()
 
@@ -280,6 +303,20 @@ fetch_wallpaper_button = ctk.CTkButton(
     hover_color=["#4caf50", "#66bb6a"]
 )
 fetch_wallpaper_button.pack(pady=(15, 10))
+
+# Remove Wallpapers
+remove_wallpapers_button = ctk.CTkButton(
+    master=app,
+    text="⬅️ Rimuovi da Apply",
+    command=remove_from_apply,
+    width=220,
+    height=45,
+    corner_radius=15,
+    font=ctk.CTkFont(size=16, weight="bold"),
+    fg_color=["#2d7a2d", "#4caf50"],
+    hover_color=["#4caf50", "#66bb6a"]
+)
+remove_wallpapers_button.pack(pady=(0, 10))
 
 # Hide button
 hide_button = ctk.CTkButton(
