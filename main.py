@@ -7,6 +7,7 @@ import json
 import shutil
 from tkinter.filedialog import askdirectory
 from tkinter import messagebox
+import webbrowser
 
 # Ctk
 ctk.set_appearance_mode("dark")
@@ -267,6 +268,10 @@ def remove_from_apply():
 
     fetch_wallpaper()
 
+# Find wallpapers
+def find_wallpapers():
+    webbrowser.open("https://www.desktophut.com/", new=2)
+
 # UI
 load_config()
 
@@ -439,7 +444,20 @@ remove_wallpapers_button = ctk.CTkButton(
     fg_color=["#6c757d", "#495057"],
     hover_color=["#5a6268", "#6c757d"]
 )
-remove_wallpapers_button.pack(side="left")
+remove_wallpapers_button.pack(side="left", padx=(0, 10))
+
+find_wallpaper_button = ctk.CTkButton(
+    master=button_panel,
+    text="🔍 Find Wallpapers",
+    command=find_wallpapers,
+    width=160,
+    height=45,
+    corner_radius=12,
+    font=ctk.CTkFont(size=14, weight="bold"),
+    fg_color=["#6c757d", "#495057"],
+    hover_color=["#5a6268", "#6c757d"]
+)
+find_wallpaper_button.pack(side="left")
 
 # Load directory
 if current_directory:
