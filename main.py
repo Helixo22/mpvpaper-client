@@ -7,7 +7,7 @@ import shutil
 from tkinter.filedialog import askdirectory
 import webbrowser
 
-# ── App Init ──────────────────────────────────────────────────────────────────
+# ── App Init ─────────────────────────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
 app = ctk.CTk()
 app.geometry("1020x680")
